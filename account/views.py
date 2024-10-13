@@ -29,3 +29,40 @@ class UserProfileView(generics.RetrieveAPIView):
             return JsonResponse(user_data, status=200)
         except User.DoesNotExist:
             return JsonResponse({"error": "User not found"}, status=404)
+
+
+# Récupérer tous les utilisateurs
+class GetAllUsersView(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+# Mettre à jour un utilisateur en fonction de son ID
+class UserUpdateView(generics.UpdateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    lookup_field = 'id'  # Utilisation de l'ID pour la mise à jour
+
+    def put(self, request, id):
+        try:
+            user = User.objects.get(pk=id)
+            serializer = UserSerializer(user, data=request.data, partial=True)  # partial=True permet de ne mettre à jour que les champs modifiés
+            if serializer.is_valid():
+                serializer.save()
+                return JsonResponse(serializer.data, status=200)
+            return JsonResponse(serializer.errors, status=400)
+        except User.DoesNotExist:
+            return JsonResponse({"error": "User not found"}, status=404)
+        
+class UserDeleteView(generics.DestroyAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    lookup_field = 'id'  # Utilisation de l'ID pour la mise à jour
+
+    def delete(self, request, id):
+        try:
+            user = User.objects.get(pk=id)
+            user.delete()
+            return JsonResponse({"message": "User deleted"}, status=200)
+        except User.DoesNotExist:
+            return JsonResponse({"error": "User not found"}, status=404)
+        
